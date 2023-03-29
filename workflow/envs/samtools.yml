@@ -1,0 +1,38 @@
+name: samtools
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=1_gnu
+  - bcftools=1.14=hde04aa1_1
+  - bzip2=1.0.8=h7f98852_4
+  - c-ares=1.18.1=h7f98852_0
+  - ca-certificates=2021.10.8=ha878542_0
+  - gsl=2.7=he838d99_0
+  - htslib=1.14=h9093b5e_0
+  - krb5=1.19.2=hcc1bbae_3
+  - libblas=3.9.0=13_linux64_openblas
+  - libcblas=3.9.0=13_linux64_openblas
+  - libcurl=7.80.0=h2574ce0_0
+  - libdeflate=1.7=h7f98852_5
+  - libedit=3.1.20191231=he28a2e2_2
+  - libev=4.33=h516909a_1
+  - libgcc-ng=11.2.0=h1d223b6_11
+  - libgfortran-ng=11.2.0=h69a702a_11
+  - libgfortran5=11.2.0=h5c6108e_11
+  - libgomp=11.2.0=h1d223b6_11
+  - libnghttp2=1.43.0=h812cca2_1
+  - libopenblas=0.3.18=pthreads_h8fe5266_0
+  - libssh2=1.10.0=ha56f1ee_2
+  - libstdcxx-ng=11.2.0=he4da1e4_11
+  - libzlib=1.2.11=h36c2ea0_1013
+  - mawk=1.3.4=h779adbc_4
+  - ncurses=6.2=h58526e2_4
+  - openssl=1.1.1l=h7f98852_0
+  - perl=5.32.1=1_h7f98852_perl5
+  - samtools=1.14=hb421002_0
+  - tk=8.6.11=h27826a3_1
+  - xz=5.2.5=h516909a_1
+  - zlib=1.2.11=h36c2ea0_1013

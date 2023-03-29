@@ -1,0 +1,43 @@
+configfile: "config/config.yml"
+
+myinput=list()
+myoutput=list()
+
+
+if "exome" in config["tech"] and "rna" in config["tech"]:
+    myinput.append(expand("results/{tec}/alignment/{tec}.positionsort.bam",tec="exome"))
+    myoutput.append(expand("results/{tec}/filtration/snps_het.vcf.gz",tec="exome"))
+    myinput.append(expand("results/{tec}/alignment/{tec}.splitted.bam",tec="rna"))
+    myoutput.append(expand("results/{tec}/filtration/snps_het.vcf.gz",tec="rna"))
+    myoutput.append(expand("results/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="rna"))
+    myoutput.append("results/rna/transcripts_quant/quant.sf")
+elif "exome" in config["tech"]:
+    myinput.append(expand("results/{tec}/alignment/{tec}.positionsort.bam",tec="exome"))
+    myoutput.append(expand("results/{tec}/filtration/snps_het.vcf.gz",tec="exome"))
+elif "rna" in config["tech"]:
+    myinput.append(expand("results/{tec}/alignment/{tec}.splitted.bam",tec="rna"))
+    myoutput.append(expand("results/{tec}/filtration/snps_het.vcf.gz",tec="rna"))
+    myoutput.append(expand("results/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="rna"))
+    myoutput.append("results/rna/transcripts_quant/quant.sf")
+
+if "atac" in config["tech"]:
+    myoutput.append("results/atac/peaks/annotated.tsv")
+    myoutput.append(expand("results/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="atac"))
+
+myoutput.append("results/phased/shapeit_whatshap.vcf.gz")
+myoutput.append("results/merged_vcf/snps_het.vcf.gz")
+
+rule all:
+    input:
+        myoutput
+        #"results/exome/recalibration/exome.positionsort.gatkgroup.bam",
+        #expand("results/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec=config["tech"])
+        #expand("results/exome/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec=config["tech"])
+
+include: "rules/alignment.smk"
+include: "rules/qc_aligned.smk"
+include: "rules/hap_caller.smk"
+include: "rules/phasing.smk"
+include: "rules/ASE.smk"
+include: "rules/peak_calling.smk"
+include: "rules/add_genome.smk"

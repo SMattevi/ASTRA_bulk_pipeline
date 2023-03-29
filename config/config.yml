@@ -1,0 +1,83 @@
+sample_name: "BJ"
+
+#comment if not used
+tech:
+    - exome
+    - rna
+    - atac
+    - genome
+
+########### RNA ###########
+fastqs_rna: ##prefix input name for all the lane of the sample
+    - "BJ"
+
+path_rna: "raw_data/rna"
+
+########## EXOME ##########
+fastqs_exome: ##prefix input name for all the lane of the sample
+    - "BJ_r1"
+    - "BJ_r2"
+
+path_exome: "raw_data/exome"
+
+########## ATAC ##########
+fastqs_atac_lanes: ##prefix input name for all the lane of the sample (supposed extension _R1.fastq.gz and _R2.fastq.gz)
+  - "BJ_lane1"
+  - "BJ_lane2"
+
+path_atac: "raw_data/atac"
+
+########## GENOME VCF ##########
+genome_vcf: "raw_data/snparray/imputed.vcf.gz"
+    
+########## REF/INDEX ##########    
+#hisat index file-> check http://daehwankimlab.github.io/hisat2/howto/ for the creation
+hisat_index: "resources/indexes/hisat2/human/hg38/genome_snp_tran"
+salmon_index: "resources/indexes/salmon/human-tr106/"
+
+genome_gtf: "resources/genome/human/hg38/Homo_sapiens.GRCh38.106.chr.gtf"
+
+genome_dict: "resources/genome/human/hg38/Homo_sapiens.GRCh38.dna.primary_assembly.dict"
+
+genome_fa: "resources/genome/human/hg38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+
+known_sites: "resources/dbSNP/human/hg38/All_20180418.vcf.gz"
+
+path_ALLvcf: resources/1kgenome/30x
+prefix_ALLvcf: chr
+extension_ALLvcf: vcf.gz
+
+bl_file: "resources/hg38_blacklist.bed"
+
+########## PARAMS ########## 
+DP: 10
+TSS_region: 5000
+threads_num: 4
+memory: 1G
+sex: "male" # or "female"
+
+chromosomes_to_phase: 
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - "X"
+
