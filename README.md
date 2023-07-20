@@ -2,7 +2,7 @@
 
 Snakemake workflow for the analysis of allele specific expression and/or chromatin accessibility from sequencing data.
 
-<img src="./rulegraph_sc.svg">
+<img src="./pipeline.svg">
 
 ## Input files needed
 
