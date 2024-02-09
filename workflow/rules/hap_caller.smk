@@ -56,12 +56,13 @@ rule het_selection:
         fin="results/{tec}/filtration/snps_het.vcf.gz",
         inter=temp("results/{tec}/filtration/snps_het_1.vcf.gz")
     params:
+        ad=config["AD"],
         samp=config["sample_name"],
         samplefile="results/{tec}/filtration/sample.txt"
     conda: "../envs/samtools.yml"
     shell:
         """ echo "{wildcards.tec}_{params.samp} {params.samp}"> {params.samplefile}
-        bcftools view {input} -i 'GT=="het"' -m2 -M2 -O z -o {output.inter}
+        bcftools view {input} -i 'GT=="het" & sMIN(AD)>{params.ad}' -m2 -M2 -O z -o {output.inter}
         bcftools reheader -s {params.samplefile} {output.inter} -o {output.fin}
         tabix {output.fin} """
 

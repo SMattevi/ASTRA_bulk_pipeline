@@ -26,6 +26,7 @@ if "atac" in config["tech"]:
 
 myoutput.append("results/phased/shapeit_whatshap.vcf.gz")
 myoutput.append("results/merged_vcf/snps_het.vcf.gz")
+myoutput.append(expand("results/phased/manual_refinment{chrom}.vcf.gz",chrom=config["chromosomes_to_phase"]))
 
 rule all:
     input:

@@ -47,10 +47,13 @@ path_ALLvcf: resources/1kgenome/30x
 prefix_ALLvcf: chr
 extension_ALLvcf: vcf.gz
 
+haptreex_exe: "resources/haptreex"
+
 bl_file: "resources/hg38_blacklist.bed"
 
 ########## PARAMS ########## 
-DP: 10
+DP: 10 #filter atac SNPs for read depth
+AD: 2 #filter RNA SNPs for minimum allelic depth of 2 on each allele
 TSS_region: 5000
 threads_num: 4
 memory: 1G
