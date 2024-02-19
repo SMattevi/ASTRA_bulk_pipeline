@@ -24,9 +24,12 @@ if "atac" in config["tech"]:
     myoutput.append("results/atac/peaks/annotated.tsv")
     myoutput.append(expand("results/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="atac"))
 
+if "seesaw" in config["extra_analysis"]:
+    myoutput.append("results/seesaw/salmon/quant.sf")
+
 myoutput.append("results/phased/shapeit_whatshap.vcf.gz")
 myoutput.append("results/merged_vcf/snps_het.vcf.gz")
-myoutput.append(expand("results/phased/manual_refinment{chrom}.vcf.gz",chrom=config["chromosomes_to_phase"]))
+myoutput.append("results/phased/manual_refinment.vcf.gz")
 
 rule all:
     input:
@@ -42,3 +45,4 @@ include: "rules/phasing.smk"
 include: "rules/ASE.smk"
 include: "rules/peak_calling.smk"
 include: "rules/add_genome.smk"
+include: "rules/seesaw.smk"

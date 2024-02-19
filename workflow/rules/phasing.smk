@@ -131,7 +131,7 @@ rule manual_phasing:
         not_phased="results/merged_vcf/snps_het.vcf.gz",
         ase="results/rna/ASE{chrom}"
     output:
-        "results/phased/manual_phasing{chrom}.tsv"
+        temp("results/phased/manual_phasing{chrom}.tsv")
     params:
         sample=config["sample_name"]
     shell:
@@ -147,15 +147,13 @@ rule tsv_to_vcf:
     input:
         "results/phased/manual_phasing{chrom}.tsv"
     output: 
-        vcf="results/phased/manual_refinment{chrom}.vcf.gz"
+        temp("results/phased/manual_refinment{chrom}.vcf")
     conda:
         "../envs/samtools.yml"
     params:
         sample=config["sample_name"]
     shell:
-        """ outvcf={output.vcf}
-        intermediate=${{outvcf%.gz}}
-        day=$(date "+%d/%m/%4Y %T")
+        """ day=$(date "+%d/%m/%4Y %T")
         echo "##fileformat=VCFv4.2
 ##FILTER=<ID=PASS,Description="All filters passed">
 ##fileDate=$day
@@ -165,8 +163,19 @@ rule tsv_to_vcf:
 ##INFO=<ID=AC,Number=1,Type=Integer,Description="Allele count">
 ##INFO=<ID=CM,Number=A,Type=Float,Description="Interpolated cM position">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Phased genotypes">
-#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	{params.sample}" >  $intermediate
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	{params.sample}" >  {output}
 
-        less {input} | awk '{{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t.\t.\tAC=1;AF=0.5\tGT\t"$6"|"$7}}'>> $intermediate
-        bgzip $intermediate
-        tabix {output.vcf} """
+        less {input} | awk '{{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t.\t.\tAC=1;AF=0.5\tGT\t"$6"|"$7}}'>> {output}
+        """
+
+rule bgzip_and_indexing_man:
+    input:
+        expand("results/phased/manual_refinment{chrom}.vcf",chrom=config["chromosomes_to_phase"])
+    output: 
+        vcf="results/phased/manual_refinment.vcf.gz",
+        vcftbi="results/phased/manual_refinment.vcf.gz.tbi"
+    conda:
+        "../envs/samtools.yml"
+    shell:
+        """ bcftools concat {input} -Oz -o {output.vcf}
+            tabix {output.vcf} """
