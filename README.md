@@ -30,6 +30,7 @@ Prepare [hisat2](https://www.nature.com/articles/s41587-019-0201-4) index files 
 For an example look at this [file](hisat_indexes.sh).
 
 ### Haptree-X
+The Haptree-X excecutable file can be downloaded from [here](https://github.com/0xTCG/haptreex/releases).
 
 ### Other reference files 
 
