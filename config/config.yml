@@ -4,8 +4,8 @@ sample_name: "BJ"
 tech:
     - exome
     - rna
-    - atac
-    - genome
+    #- atac
+    #- genome
 
 ########### RNA ###########
 fastqs_rna: ##prefix input name for all the lane of the sample
@@ -84,3 +84,5 @@ chromosomes_to_phase:
   - 22
   - "X"
 
+extra_analysis:
+  - seesaw
