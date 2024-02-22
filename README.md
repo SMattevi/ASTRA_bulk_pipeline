@@ -7,7 +7,7 @@ Snakemake workflow for the analysis of allele specific expression and/or chromat
 ## Input files needed
 
 As input are needed the gzipped fastq file of *one* sample.
-It is possible to use either RNA-seq and/or ATAC-seq and eventual WES fastq files.
+It is possible to use either RNA-seq and/or ATAC-seq and eventual WES fastq files and/or additional known SNPs (vcf file format).
 
 ## Reference files preparation
 
@@ -34,7 +34,7 @@ The Haptree-X excecutable file can be downloaded from [here](https://github.com/
 
 ### Other reference files 
 
-dbSNPs for variant calling with Shapeit4 available [here]()
+dbSNPs for variant calling with Shapeit4 available [here](https://ftp.ncbi.nih.gov/snp/organisms/)
 
 
 <details><summary>GRCh38 download example </summary>
