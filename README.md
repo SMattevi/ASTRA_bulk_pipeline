@@ -34,7 +34,7 @@ The Haptree-X excecutable file can be downloaded from [here](https://github.com/
 
 ### Other reference files 
 
-dbSNPs for variant calling with Shapeit4 available [here](http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working)
+Reference file for variant calling with Shapeit4 available [here](http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working)
 
 
 <details><summary>GRCh38 download example </summary>
