@@ -95,12 +95,12 @@ rule featureCount:
     threads: config["threads_num"]
     shell:
         """ R1=$(echo {input.R1})
-        R1new=$(echo $R1 | sed 's/ /,/g ')
+        #R1new=$(echo $R1 | sed 's/ /,/g ')
         R2=$(echo {input.R2})
-        R2new=$(echo $R2 | sed 's/ /,/g ')
+        #R2new=$(echo $R2 | sed 's/ /,/g ')
         salmon quant -i {params.index} \
-            -l A -1 $R1new \
-            -2  $R2new \
+            -l A -1 $R1 \
+            -2  $R2 \
             --validateMappings -o {params.outdir} \
             -p {threads}"""
 
