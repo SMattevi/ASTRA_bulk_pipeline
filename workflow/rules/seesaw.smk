@@ -53,13 +53,13 @@ rule isoform_quantification:
     shell:
         """
         R1=$(echo {input.fq1})
-        R1new=$(echo $R1 | sed 's/ /,/g ')
+        #R1new=$(echo $R1 | sed 's/ /,/g ')
         R2=$(echo {input.fq2})
-        R2new=$(echo $R2 | sed 's/ /,/g ')
+        #R2new=$(echo $R2 | sed 's/ /,/g ')
 
         salmon index -p {threads} -i {output.txome} -t {input.transcripts} --keepDuplicates
 
         salmon quant -i {output.txome} \
         -l A -p {threads} --numBootstraps 30 \
-        -o {params.outdir} -1 $R1new -2 $R2new
+        -o {params.outdir} -1 $R1 -2 $R2
         """
