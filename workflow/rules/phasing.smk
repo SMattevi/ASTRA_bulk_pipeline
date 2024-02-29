@@ -101,18 +101,19 @@ rule phasing_SHAPEIT4:
 rule phasing_haptreex:
     input:
         vcf="results/merged_vcf/snps_het.vcf.gz",
-        bam="results/{tech}/recalibration/{tech}.recal.bam"
+        bam="results/rna/recalibration/rna.recal.bam"
     output:
         "results/phased/haptreex.tsv"
     params:
         gtffile=config["genome_gtf"],
-        haptreex=config["haptreex_exe"]
+        haptreex=config["haptreex_exe"],
+        tec=config["tech"]
     shell:
         """ bcftools view {input.vcf} -Ov -o temp.vcf
-        if [ exome in {wildcard.tech} ]
+        if [[ "{params.tec}" == *exome* ]]
         then
             {params.haptreex} -v temp.vcf -r results/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results/exome/recalibration/exome.recal.bam
-        else if [ atac in {wildcards.tech} ]
+        elif [[ "{params.tec}" == *atac* ]]
         then
             {params.haptreex} -v temp.vcf -r results/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results/atac/recalibration/atac.recal.bam
         else
