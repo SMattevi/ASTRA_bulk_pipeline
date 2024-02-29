@@ -101,7 +101,7 @@ rule phasing_SHAPEIT4:
 rule phasing_haptreex:
     input:
         vcf="results/merged_vcf/snps_het.vcf.gz",
-        bam="results/rna/recalibration/rna.recal.bam"
+        bam="results/{tech}/recalibration/{tech}.recal.bam"
     output:
         "results/phased/haptreex.tsv"
     params:
@@ -109,7 +109,15 @@ rule phasing_haptreex:
         haptreex=config["haptreex_exe"]
     shell:
         """ bcftools view {input.vcf} -Ov -o temp.vcf
-        {params.haptreex} -v temp.vcf -r {input.bam} -g {params.gtffile} -o {output}
+        if [ exome in {wildcard.tech} ]
+        then
+            {params.haptreex} -v temp.vcf -r results/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results/exome/recalibration/exome.recal.bam
+        else if [ atac in {wildcards.tech} ]
+        then
+            {params.haptreex} -v temp.vcf -r results/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results/atac/recalibration/atac.recal.bam
+        else
+            {params.haptreex} -v temp.vcf -r results/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output}
+        fi
         rm temp.vcf """
 
 rule bgzip_and_indexing:
