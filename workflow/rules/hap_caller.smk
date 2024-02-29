@@ -49,22 +49,54 @@ rule HardFiltering:
 
         gatk CollectVariantCallingMetrics -I {output.final} --DBSNP {params.dbsnp} -SD {params.dict_gen} -O results/{wildcards.tec}/filtration/metrics """
     
-rule het_selection:
+rule het_selection_rna:
     input: 
-        "results/{tec}/filtration/snps_filtered.vcf.gz"
+        "results/rna/filtration/snps_filtered.vcf.gz"
     output:
-        fin="results/{tec}/filtration/snps_het.vcf.gz",
-        inter=temp("results/{tec}/filtration/snps_het_1.vcf.gz")
+        fin="results/rna/filtration/snps_het.vcf.gz",
+        inter=temp("results/rna/filtration/snps_het_1.vcf.gz")
     params:
         ad=config["AD"],
         samp=config["sample_name"],
-        samplefile="results/{tec}/filtration/sample.txt"
+        samplefile="results/rna/filtration/sample.txt"
     conda: "../envs/samtools.yml"
     shell:
-        """ echo "{wildcards.tec}_{params.samp} {params.samp}"> {params.samplefile}
+        """ echo "rna_{params.samp} {params.samp}"> {params.samplefile}
         bcftools view {input} -i 'GT=="het" & sMIN(AD)>{params.ad}' -m2 -M2 -O z -o {output.inter}
         bcftools reheader -s {params.samplefile} {output.inter} -o {output.fin}
         tabix {output.fin} """
+
+rule het_selection_exome:
+    input: 
+        "results/exome/filtration/snps_filtered.vcf.gz"
+    output:
+        fin="results/exome/filtration/snps_het.vcf.gz",
+        inter=temp("results/exome/filtration/snps_het_1.vcf.gz")
+    params:
+        samp=config["sample_name"],
+        samplefile="results/exome/filtration/sample.txt"
+    conda: "../envs/samtools.yml"
+    shell:
+        """ echo "exome_{params.samp} {params.samp}"> {params.samplefile}
+        bcftools view {input} -i 'GT=="het"' -m2 -M2 -O z -o {output.inter}
+        bcftools reheader -s {params.samplefile} {output.inter} -o {output.fin}
+        tabix {output.fin} """  
+
+rule het_selection_atac:
+    input: 
+        "results/atac/filtration/snps_filtered.vcf.gz"
+    output:
+        fin="results/atac/filtration/snps_het.vcf.gz",
+        inter=temp("results/atac/filtration/snps_het_1.vcf.gz")
+    params:
+        samp=config["sample_name"],
+        samplefile="results/atac/filtration/sample.txt"
+    conda: "../envs/samtools.yml"
+    shell:
+        """ echo "atac_{params.samp} {params.samp}"> {params.samplefile}
+        bcftools view {input} -i 'GT=="het"' -m2 -M2 -O z -o {output.inter}
+        bcftools reheader -s {params.samplefile} {output.inter} -o {output.fin}
+        tabix {output.fin} """    
 
 # rule concatenate:
 #     input: 
