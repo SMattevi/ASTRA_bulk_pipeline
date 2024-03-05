@@ -35,7 +35,7 @@ For an example look at this [file](hisat_indexes.sh).
 Add file paths to [config file](config/config.yaml) in `hisat_index`
 
 ### Haptree-X
-Haplotype phasing is perform using 3 different tools, WhatsHap, Shapeit and Haptree-X. While the other methods are automaticaly incluuded in the pipeline through conda environments or docker images, Haptree-X should be installed locally. In particular, you would just need to download the last released excecutable file, an example follows.
+Haplotype phasing is performed using 3 different tools, WhatsHap, Shapeit and Haptree-X. While the other methods are automaticaly included in the pipeline through conda environments or docker images, Haptree-X should be installed locally. In particular, you would just need to download the last released executable file, an example follows.
 
 The Haptree-X excecutable file can be downloaded from [here](https://github.com/0xTCG/haptreex/releases).
 
@@ -64,5 +64,7 @@ for i in {1..22} X; do wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_colle
 ```bash
 snakemake --cores [cores_number] --use-conda --use-singularity
 ```
+
+Once the config file is fully completed you can run the entire pipeline by just typing the command above. 
 
 ## Results architecture
