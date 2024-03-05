@@ -68,3 +68,93 @@ snakemake --cores [cores_number] --use-conda --use-singularity
 Once the config file is fully completed you can run the entire pipeline by just typing the command above. 
 
 ## Results architecture
+<details><summary> Output architecture </summary>
+<p> 
+  
+```bash
+results/
+├── exome
+│   ├── filtration
+│   │   ├── filtered.vcf.gz
+│   │   ├── filtered.vcf.gz.tbi
+│   │   ├── indels.vcf.gz
+│   │   ├── indels.vcf.gz.tbi
+│   │   ├── indels_filtered.vcf.gz
+│   │   ├── indels_filtered.vcf.gz.tbi
+│   │   ├── metrics.variant_calling_detail_metrics
+│   │   ├── metrics.variant_calling_summary_metrics
+│   │   ├── sample.txt
+│   │   ├── snps.vcf.gz
+│   │   ├── snps.vcf.gz.tbi
+│   │   ├── snps_filtered.vcf.gz
+│   │   ├── snps_filtered.vcf.gz.tbi
+│   │   ├── snps_het.vcf.gz
+│   │   └── snps_het.vcf.gz.tbi
+│   ├── haplotypeCaller
+│   │   ├── exome.g.vcf.gz.tbi
+│   │   ├── exome.vcf.gz
+│   │   └── exome.vcf.gz.tbi
+│   ├── prephasing
+│   │   ├── pre_phased.vcf.gz
+│   │   └── pre_phased.vcf.gz.tbi
+│   └── recalibration
+│       ├── exome.recal.bai
+│       ├── exome.recal.bam
+│       └── recal_data.table
+├── rna
+│   ├── ASEX
+│   │   └── rna.table
+│   ├── alignment
+│   │   └── rna.splitted.bai
+│   ├── filtration
+│   │   ├── filtered.vcf.gz
+│   │   ├── filtered.vcf.gz.tbi
+│   │   ├── indels.vcf.gz
+│   │   ├── indels.vcf.gz.tbi
+│   │   ├── indels_filtered.vcf.gz
+│   │   ├── indels_filtered.vcf.gz.tbi
+│   │   ├── metrics.variant_calling_detail_metrics
+│   │   ├── metrics.variant_calling_summary_metrics
+│   │   ├── sample.txt
+│   │   ├── snps.vcf.gz
+│   │   ├── snps.vcf.gz.tbi
+│   │   ├── snps_filtered.vcf.gz
+│   │   ├── snps_filtered.vcf.gz.tbi
+│   │   ├── snps_het.vcf.gz
+│   │   └── snps_het.vcf.gz.tbi
+│   ├── haplotypeCaller
+│   │   ├── rna.g.vcf.gz.tbi
+│   │   ├── rna.vcf.gz
+│   │   └── rna.vcf.gz.tbi
+│   ├── prephasing
+│   │   ├── pre_phased.vcf.gz
+│   │   └── pre_phased.vcf.gz.tbi
+│   ├── recalibration
+│   │   ├── recal_data.table
+│   │   ├── rna.recal.bai
+│   │   └── rna.recal.bam
+│   └── transcripts_quant
+│       ├── logs
+│       │   └── salmon_quant.log
+│       └── quant.sf
+├── merged_vcf
+│   ├── snps_het.vcf.gz
+│   └── snps_het.vcf.gz.tbi
+├── phased
+│   ├── haptreex.tsv
+│   ├── manual_refinment.vcf.gz
+│   ├── manual_refinment.vcf.gz.tbi
+│   ├── pre_phased.vcf.gz
+│   ├── pre_phased.vcf.gz.tbi
+│   ├── shapeit_whatshap.vcf.gz
+│   └── shapeit_whatshap.vcf.gz.tbi
+└── seesaw
+    ├── salmon
+    │   ├── logs
+    │   │   └── salmon_quant.log
+    │   └── quant.sf
+    └── transcripts.fa
+```
+
+</p>
+</details>
