@@ -1,28 +1,27 @@
-#HPD04 SEESAW testx
-#HPD04 SEESAW test
 rule transcripts_extraction:
     input: 
-        "results/phased/manual_refinment.vcf.gz"
+        "results_{sample_id}/phased/manual_refinment.vcf.gz"
     output:
-        gtf=temp("results/seesaw/g2gtools.gtf"),
-        db=temp("results/seesaw/g2gtools.db"),
-        fa=temp("results/seesaw/g2gtools.fa"),
-        vcitbi=temp("results/seesaw/g2gtools.vci.gz.tbi"),
-        vcigz=temp("results/seesaw/g2gtools.vci.gz"),
-        gtfunm=temp("results/seesaw/g2gtools.gtf.unmapped"),
-        fafai=temp("results/seesaw/g2gtools.fa.fai"),
-        transcript="results/seesaw/transcripts.fa"
+        gtf=temp("results_{sample_id}/seesaw/g2gtools.gtf"),
+        db=temp("results_{sample_id}/seesaw/g2gtools.db"),
+        fa=temp("results_{sample_id}/seesaw/g2gtools.fa"),
+        vcitbi=temp("results_{sample_id}/seesaw/g2gtools.vci.gz.tbi"),
+        vcigz=temp("results_{sample_id}/seesaw/g2gtools.vci.gz"),
+        gtfunm=temp("results_{sample_id}/seesaw/g2gtools.gtf.unmapped"),
+        fafai=temp("results_{sample_id}/seesaw/g2gtools.fa.fai"),
+        transcript="results_{sample_id}/seesaw/transcripts.fa"
     params:
         genomefa=config["genome_fa"],
         gtf=config["genome_gtf"],
-        sample=config["sample_name"]
+        sample="{sample_id}"
     conda: "../envs/g2gtools.yml"
     threads: config["threads_num"]
     shell:
         """ vci={output.vcigz}
         vci=${{vci%.gz}}
-        g2gtools vcf2vci -f {params.genomefa} -o $vci -s {params.sample} --diploid -p {threads} \
-        -i {input}
+        mkdir -p results_{params.sample}/seesaw/
+
+        g2gtools vcf2vci -f {params.genomefa} -o $vci -s {params.sample} --diploid -p {threads} -i {input}
 
         # Incorporate SNP
         g2gtools patch -i {params.genomefa} -c {output.vcigz} -o {output.fa} -p {threads}
@@ -39,17 +38,17 @@ rule transcripts_extraction:
 
 rule isoform_quantification:
     input: 
-        transcripts="results/seesaw/transcripts.fa",
+        transcripts="results_{sample_id}/seesaw/transcripts.fa",
         fq1=expand("{path}/{sample}_R1.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=","),
         fq2=expand("{path}/{sample}_R2.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=",")
     output:
-        final="results/seesaw/salmon/quant.sf",
-        txome=directory("results/seesaw/salmon/diploid_txome")
+        final="results_{sample_id}/seesaw/salmon/quant.sf",
+        txome=directory("results_{sample_id}/seesaw/salmon/diploid_txome")
     conda:
-        "../envs/samtools.yml"
+        "../envs/salmon.yml"
     threads: config["threads_num"]
     params: 
-        outdir="results/seesaw/salmon"
+        outdir="results_{sample_id}/seesaw/salmon"
     shell:
         """
         R1=$(echo {input.fq1})

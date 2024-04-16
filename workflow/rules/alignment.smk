@@ -5,10 +5,10 @@ rule alignment_exome:
     threads: 
         config["threads_num"]
     params: 
-        index_gen = config["hisat_index"],
+        index_gen = config["hisat_index"]
     output:
-        temp("results/exome/alignment/exome.sam")
-    log: "logs/exome.log"
+        temp("results_{sample_id}/exome/alignment/exome.sam")
+    log: "logs/exome_{sample_id}.log"
     conda:
         "../envs/hisat.yml"
     shell:
@@ -33,8 +33,8 @@ rule alignment_rna:
     params: 
         index_gen = config["hisat_index"],
     output:
-        temp("results/rna/alignment/rna.sam")
-    log: "logs/rna.log"
+        temp("results_{sample_id}/rna/alignment/rna.sam")
+    log: "logs/rna_{sample_id}.log"
     conda:
         "../envs/hisat.yml"
     shell:
@@ -58,8 +58,8 @@ rule alignment_atac:
     params: 
         index_gen = config["hisat_index"]
     output:
-        temp("results/atac/alignment/atac.sam")
-    log: "logs/atac_hisat.log"
+        temp("results_{sample_id}/atac/alignment/atac.sam")
+    log: "logs/atac_hisat_{sample_id}.log"
     conda:
         "../envs/hisat.yml"
     shell:

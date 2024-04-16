@@ -43,11 +43,14 @@ genome_fa: "resources/genome/human/hg38/Homo_sapiens.GRCh38.dna.primary_assembly
 
 known_sites: "resources/dbSNP/human/hg38/All_20180418.vcf.gz"
 
+editing_sites: "resources/editing_sites.txt"
+
 path_ALLvcf: resources/1kgenome/30x
 prefix_ALLvcf: chr
 extension_ALLvcf: vcf.gz
 
 haptreex_exe: "resources/haptreex"
+htslib_path: "path/to/haptreex/lib"
 
 bl_file: "resources/hg38_blacklist.bed"
 
@@ -60,7 +63,7 @@ memory: 1G
 sex: "male" # or "female"
 
 chromosomes_to_phase: 
-  - 1
+  - 1 #or "chr1" etc
   - 2
   - 3
   - 4

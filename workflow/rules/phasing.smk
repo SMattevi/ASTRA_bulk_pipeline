@@ -1,43 +1,63 @@
-rule prephasing_WHATSHAP_er:
+rule prephasing_WHATSHAP_e:
     input:
-        vcf="results/{tec}/filtration/snps_het.vcf.gz",
-        bam="results/{tec}/recalibration/{tec}.recal.bam"
+        vcf="results_{sample_id}/rna/filtration/snps_het.vcf.gz",
+        bam="results_{sample_id}/rna/recalibration/rna.recal.bam"
     output:
-        v="results/{tec}/prephasing/pre_phased.vcf.gz",
-        t="results/{tec}/prephasing/pre_phased.vcf.gz.tbi"
+        v="results_{sample_id}/rna/prephasing/pre_phased.vcf.gz",
+        t="results_{sample_id}/rna/prephasing/pre_phased.vcf.gz.tbi"
     params: 
-        config["genome_fa"]
+        genome=config["genome_fa"],
+        outdir="results_{sample_id}"
     conda:
         "../envs/whatshap.yml"
     shell:
-        """ mkdir -p results/{wildcards.tec}/prephasing
-        whatshap phase -o results/{wildcards.tec}/prephasing/pre_phased.vcf --reference={params} {input.vcf} {input.bam} --ignore-read-groups
-        bgzip results/{wildcards.tec}/prephasing/pre_phased.vcf
+        """ mkdir -p {params.outdir}/rna/prephasing
+        whatshap phase -o {params.outdir}/rna/prephasing/pre_phased.vcf --reference={params.genome} {input.vcf} {input.bam} --ignore-read-groups
+        bgzip {params.outdir}/rna/prephasing/pre_phased.vcf
+        tabix {output.v} """
+
+rule prephasing_WHATSHAP_r:
+    input:
+        vcf="results_{sample_id}/exome/filtration/snps_het.vcf.gz",
+        bam="results_{sample_id}/exome/recalibration/exome.recal.bam"
+    output:
+        v="results_{sample_id}/exome/prephasing/pre_phased.vcf.gz",
+        t="results_{sample_id}/exome/prephasing/pre_phased.vcf.gz.tbi"
+    params: 
+        genome=config["genome_fa"],
+        outdir="results_{sample_id}"
+    conda:
+        "../envs/whatshap.yml"
+    shell:
+        """ mkdir -p {params.outdir}/exome/prephasing
+        whatshap phase -o {params.outdir}/exome/prephasing/pre_phased.vcf --reference={params.genome} {input.vcf} {input.bam} --ignore-read-groups
+        bgzip {params.outdir}/exome/prephasing/pre_phased.vcf
         tabix {output.v} """
 
 rule prephasing_WHATSHAP_atac:
     input:
-        vcf="results/atac/filtration/snps_het.vcf.gz",
-        bam="results/atac/mapping_result/atac.final.bam"
+        vcf="results_{sample_id}/atac/filtration/snps_het.vcf.gz",
+        bam="results_{sample_id}/atac/mapping_result/atac.final.bam"
     output:
-        v="results/atac/prephasing/pre_phased.vcf.gz",
-        t="results/atac/prephasing/pre_phased.vcf.gz.tbi"
+        v="results_{sample_id}/atac/prephasing/pre_phased.vcf.gz",
+        t="results_{sample_id}/atac/prephasing/pre_phased.vcf.gz.tbi"
     params: 
-        config["genome_fa"]
+        fa=config["genome_fa"],
+        sampleid="{sample_id}"
     conda:
         "../envs/whatshap.yml"
     shell:
-        """ mkdir -p results/atac/prephasing
-        whatshap phase -o results/atac/prephasing/pre_phased.vcf --reference={params} {input.vcf} {input.bam} --ignore-read-groups
-        bgzip results/atac/prephasing/pre_phased.vcf
+        """ mkdir -p results_{params.sampleid}/atac/prephasing
+        whatshap phase -o results_{params.sampleid}/atac/prephasing/pre_phased.vcf --reference={params.fa} {input.vcf} {input.bam} --ignore-read-groups
+        bgzip results_{params.sampleid}/atac/prephasing/pre_phased.vcf
         tabix {output.v} """
 
 rule merge_tec_vcf:
     input:
-        pp=expand("results/{tec}/filtration/snps_het.vcf.gz",tec=config["tech"])
+        pp=expand("results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",tec=config["tech"],sample_id=config["sample_name"])
     output:
-        v="results/merged_vcf/snps_het.vcf.gz",
-        t="results/merged_vcf/snps_het.vcf.gz.tbi"
+        v="results_{sample_id}/merged_vcf/snps_het.vcf.gz",
+        t="results_{sample_id}/merged_vcf/snps_het.vcf.gz.tbi"
     conda:
         "../envs/samtools.yml"
     shell:
@@ -46,10 +66,10 @@ rule merge_tec_vcf:
 
 rule merge_tec_vcf_prephased:
     input:
-        np=expand("results/{tec}/prephasing/pre_phased.vcf.gz",tec=config["tech"])
+        np=expand("results_{sample_id}/{tec}/prephasing/pre_phased.vcf.gz",tec=config["tech"],sample_id=config["sample_name"])
     output:
-        vp="results/phased/pre_phased.vcf.gz",
-        tp="results/phased/pre_phased.vcf.gz.tbi"
+        vp="results_{sample_id}/phased/pre_phased.vcf.gz",
+        tp="results_{sample_id}/phased/pre_phased.vcf.gz.tbi"
     conda:
         "../envs/samtools.yml"
     shell:
@@ -58,10 +78,10 @@ rule merge_tec_vcf_prephased:
 
 rule divide_chr_VCF:
     input:
-        "results/merged_vcf/variantsQC.vcf.gz"
+        "results_{sample_id}/merged_vcf/variantsQC.vcf.gz"
     output:
-        cv="results/merged_vcf/chr{chrom}QC.vcf.gz",
-        ct="results/merged_vcf/chr{chrom}QC.vcf.gz.tbi"
+        cv="results_{sample_id}/merged_vcf/{chrom}QC.vcf.gz",
+        ct="results_{sample_id}/merged_vcf/{chrom}QC.vcf.gz.tbi"
     conda:
         "../envs/samtools.yml"
     shell:
@@ -75,11 +95,11 @@ rule divide_chr_VCF:
 #phase the quality controlled called SNPs with shapeit4
 rule phasing_SHAPEIT4:
     input:
-        vcftbi="results/phased/pre_phased.vcf.gz.tbi",
-        vcf="results/phased/pre_phased.vcf.gz",
+        vcftbi="results_{sample_id}/phased/pre_phased.vcf.gz.tbi",
+        vcf="results_{sample_id}/phased/pre_phased.vcf.gz",
         ref_vcf=expand("{path}/{prefix}{chrom}.{extension}", path=config["path_ALLvcf"],prefix=config["prefix_ALLvcf"],extension=config["extension_ALLvcf"],  allow_missing=True)
     output: 
-        temp("results/phased/chr{chrom}_phased.vcf")
+        temp("results_{sample_id}/phased/{chrom}_phased.vcf")
     conda:
         "../envs/shapeit.yml"
     threads: config["threads_num"]
@@ -100,33 +120,36 @@ rule phasing_SHAPEIT4:
 
 rule phasing_haptreex:
     input:
-        vcf="results/merged_vcf/snps_het.vcf.gz",
-        bam="results/rna/recalibration/rna.recal.bam"
+        vcf="results_{sample_id}/merged_vcf/snps_het.vcf.gz",
+        bam="results_{sample_id}/rna/recalibration/rna.recal.bam"
     output:
-        "results/phased/haptreex.tsv"
+        "results_{sample_id}/phased/haptreex.tsv"
     params:
         gtffile=config["genome_gtf"],
         haptreex=config["haptreex_exe"],
-        tec=config["tech"]
+        tec=config["tech"],
+        htslib=config["htslib_path"],
+        sampleid="{sample_id}"
     shell:
         """ bcftools view {input.vcf} -Ov -o temp.vcf
+        export LD_LIBRARY_PATH={params.htslib}
         if [[ "{params.tec}" == *exome* ]]
         then
-            {params.haptreex} -v temp.vcf -r results/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results/exome/recalibration/exome.recal.bam
+            {params.haptreex} -v temp.vcf -r results_{params.sampleid}/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results_{params.sampleid}/exome/recalibration/exome.recal.bam
         elif [[ "{params.tec}" == *atac* ]]
         then
-            {params.haptreex} -v temp.vcf -r results/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results/atac/recalibration/atac.recal.bam
+            {params.haptreex} -v temp.vcf -r results_{params.sampleid}/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results_{params.sampleid}/atac/recalibration/atac.recal.bam
         else
-            {params.haptreex} -v temp.vcf -r results/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output}
+            {params.haptreex} -v temp.vcf -r results_{params.sampleid}/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output}
         fi
         rm temp.vcf """
 
 rule bgzip_and_indexing:
     input:
-        expand("results/phased/chr{chrom}_phased.vcf",chrom=config["chromosomes_to_phase"])
+        expand("results_{sample_id}/phased/{chrom}_phased.vcf",chrom=config["chromosomes_to_phase"],sample_id=config["sample_name"])
     output: 
-        vcf="results/phased/shapeit_whatshap.vcf.gz",
-        vcftbi="results/phased/shapeit_whatshap.vcf.gz.tbi"
+        vcf="results_{sample_id}/phased/shapeit_whatshap.vcf.gz",
+        vcftbi="results_{sample_id}/phased/shapeit_whatshap.vcf.gz.tbi"
     conda:
         "../envs/samtools.yml"
     shell:
@@ -135,12 +158,12 @@ rule bgzip_and_indexing:
 
 rule manual_phasing:
     input:
-        haptreex="results/phased/haptreex.tsv",
-        shapeit="results/phased/shapeit_whatshap.vcf.gz",
-        not_phased="results/merged_vcf/snps_het.vcf.gz",
-        ase="results/rna/ASE{chrom}"
+        haptreex="results_{sample_id}/phased/haptreex.tsv",
+        shapeit="results_{sample_id}/phased/shapeit_whatshap.vcf.gz",
+        not_phased="results_{sample_id}/merged_vcf/snps_het.vcf.gz",
+        ase="results_{sample_id}/rna/ASE{chrom}"
     output:
-        temp("results/phased/manual_phasing{chrom}.tsv")
+        temp("results_{sample_id}/phased/manual_phasing{chrom}.tsv")
     params:
         sample=config["sample_name"]
     shell:
@@ -154,9 +177,9 @@ rule manual_phasing:
 
 rule tsv_to_vcf:
     input:
-        "results/phased/manual_phasing{chrom}.tsv"
+        "results_{sample_id}/phased/manual_phasing{chrom}.tsv"
     output: 
-        temp("results/phased/manual_refinment{chrom}.vcf")
+        temp("results_{sample_id}/phased/manual_refinment{chrom}.vcf")
     conda:
         "../envs/samtools.yml"
     params:
@@ -179,10 +202,10 @@ rule tsv_to_vcf:
 
 rule bgzip_and_indexing_man:
     input:
-        expand("results/phased/manual_refinment{chrom}.vcf",chrom=config["chromosomes_to_phase"])
+        expand("results_{sample_id}/phased/manual_refinment{chrom}.vcf",chrom=config["chromosomes_to_phase"],sample_id=config["sample_name"])
     output: 
-        vcf="results/phased/manual_refinment.vcf.gz",
-        vcftbi="results/phased/manual_refinment.vcf.gz.tbi"
+        vcf="results_{sample_id}/phased/manual_refinment.vcf.gz",
+        vcftbi="results_{sample_id}/phased/manual_refinment.vcf.gz.tbi"
     conda:
         "../envs/samtools.yml"
     shell:
