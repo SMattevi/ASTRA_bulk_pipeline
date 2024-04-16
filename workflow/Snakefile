@@ -5,31 +5,31 @@ myoutput=list()
 
 
 if "exome" in config["tech"] and "rna" in config["tech"]:
-    myinput.append(expand("results/{tec}/alignment/{tec}.positionsort.bam",tec="exome"))
-    myoutput.append(expand("results/{tec}/filtration/snps_het.vcf.gz",tec="exome"))
-    myinput.append(expand("results/{tec}/alignment/{tec}.splitted.bam",tec="rna"))
-    myoutput.append(expand("results/{tec}/filtration/snps_het.vcf.gz",tec="rna"))
-    myoutput.append(expand("results/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="rna"))
-    myoutput.append("results/rna/transcripts_quant/quant.sf")
+    myinput.append(expand("results_{sample_id}/{tec}/alignment/{tec}.positionsort.bam",tec="exome",sample_id=config["sample_name"]))
+    myoutput.append(expand("results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",tec="exome",sample_id=config["sample_name"]))
+    myinput.append(expand("results_{sample_id}/{tec}/alignment/{tec}.splitted.bam",tec="rna",sample_id=config["sample_name"]))
+    myoutput.append(expand("results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",tec="rna",sample_id=config["sample_name"]))
+    myoutput.append(expand("results_{sample_id}/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="rna",sample_id=config["sample_name"]))
+    myoutput.append(expand("results_{sample_id}/rna/transcripts_quant/quant.sf",sample_id=config["sample_name"]))
 elif "exome" in config["tech"]:
-    myinput.append(expand("results/{tec}/alignment/{tec}.positionsort.bam",tec="exome"))
-    myoutput.append(expand("results/{tec}/filtration/snps_het.vcf.gz",tec="exome"))
+    myinput.append(expand("results_{sample_id}/{tec}/alignment/{tec}.positionsort.bam",tec="exome",sample_id=config["sample_name"]))
+    myoutput.append(expand("results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",tec="exome",sample_id=config["sample_name"]))
 elif "rna" in config["tech"]:
-    myinput.append(expand("results/{tec}/alignment/{tec}.splitted.bam",tec="rna"))
-    myoutput.append(expand("results/{tec}/filtration/snps_het.vcf.gz",tec="rna"))
-    myoutput.append(expand("results/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="rna"))
-    myoutput.append("results/rna/transcripts_quant/quant.sf")
+    myinput.append(expand("results_{sample_id}/{tec}/alignment/{tec}.splitted.bam",tec="rna",sample_id=config["sample_name"]))
+    myoutput.append(expand("results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",tec="rna",sample_id=config["sample_name"]))
+    myoutput.append(expand("results_{sample_id}/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="rna",sample_id=config["sample_name"]))
+    myoutput.append(expand("results_{sample_id}/rna/transcripts_quant/quant.sf",sample_id=config["sample_name"]))
 
 if "atac" in config["tech"]:
-    myoutput.append("results/atac/peaks/annotated.tsv")
-    myoutput.append(expand("results/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="atac"))
+    myoutput.append(expand("results_{sample_id}/atac/peaks/annotated.tsv",sample_id=config["sample_name"]))
+    myoutput.append(expand("results_{sample_id}/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="atac",sample_id=config["sample_name"]))
 
 if "seesaw" in config["extra_analysis"]:
-    myoutput.append("results/seesaw/salmon/quant.sf")
+    myoutput.append(expand("results_{sample_id}/seesaw/salmon/quant.sf",sample_id=config["sample_name"]))
 
-myoutput.append("results/phased/shapeit_whatshap.vcf.gz")
-myoutput.append("results/merged_vcf/snps_het.vcf.gz")
-myoutput.append("results/phased/manual_refinment.vcf.gz")
+myoutput.append(expand("results_{sample_id}/phased/shapeit_whatshap.vcf.gz",sample_id=config["sample_name"]))
+myoutput.append(expand("results_{sample_id}/merged_vcf/snps_het.vcf.gz",sample_id=config["sample_name"]))
+myoutput.append(expand("results_{sample_id}/phased/manual_refinment.vcf.gz",sample_id=config["sample_name"]))
 
 rule all:
     input:
