@@ -24,7 +24,7 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 print(opt)
 
-BM<-biomart_df()
+BM<-annotationhub_df()
 
 chromosome=opt$chr
 BMsel<-BM[BM$chromosome_name==chromosome,]
