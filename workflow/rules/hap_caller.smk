@@ -158,8 +158,8 @@ rule QC_VCF:
         "results_{sample_id}/atac/haplotypeCaller/atac.bial.vcf.gz"
     output:
         final="results_{sample_id}/atac/filtration/snps_filtered.vcf.gz",
-	    initial="results_{sample_id}/atac/haplotypeCaller/variantsPASS.vcf.gz",
-	    vcftbi="results_{sample_id}/atac/filtration/snps_filtered.vcf.gz.tbi"
+	initial="results_{sample_id}/atac/haplotypeCaller/variantsPASS.vcf.gz",
+	vcftbi="results_{sample_id}/atac/filtration/snps_filtered.vcf.gz.tbi"
     conda:
         "../envs/samtools.yml"
     params:
