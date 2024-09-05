@@ -83,15 +83,18 @@ rule het_selection_rna:
         "results_{sample_id}/rna/filtration/snps_filtered.vcf.gz"
     output:
         fin="results_{sample_id}/rna/filtration/snps_het.vcf.gz",
-        inter=temp("results_{sample_id}/rna/filtration/snps_het_1.vcf.gz")
+        inter=temp("results_{sample_id}/rna/filtration/snps_het_1.vcf.gz"),
+        noed=temp("results_{sample_id}/rna/filtration/snps_noediting.vcf.gz")
     params:
         ad=config["AD"],
         samp=config["sample_name"],
-        samplefile="results_{sample_id}/rna/filtration/sample.txt"
+        samplefile="results_{sample_id}/rna/filtration/sample.txt",
+        editingsites=config["editing_sites"]
     conda: "../envs/samtools.yml"
     shell:
         """ echo "rna_{params.samp} {params.samp}"> {params.samplefile}
         bcftools view {input} -i 'GT=="het" & sMIN(AD)>{params.ad}' -m2 -M2 -O z -o {output.inter}
+        bcftools view -T ^{params.editingsites} {output.inter} -Oz -o {output.noed}
         bcftools reheader -s {params.samplefile} {output.inter} -o {output.fin}
         tabix {output.fin} """
 
@@ -163,6 +166,7 @@ rule GATK_haplotypeCall:
 
         # correct the genotypes that come out of haplotype caller
         gatk --java-options "-Xmx4g" GenotypeGVCFs \
+        --include-non-variant-sites \
         -L {input.peaks} \
         -R {params.genome} \
         -V {output.initial} \
