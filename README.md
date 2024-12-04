@@ -23,7 +23,7 @@ gzip -d Homo_sapiens.GRCh38.107.chr.gtf.gz
 wget http://ftp.ensembl.org/pub/release-107/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
 gzip -d Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
 ```
-Add file paths to [config file](config/config.yaml) in `genome_gtf` and `genome_fa`
+Add file paths to [config file](config/config.yml) in `genome_gtf` and `genome_fa`
 
 ### Hisat2
 The alignment is performed using Hisat2. Hisat2 specific index file should be created.
@@ -32,14 +32,14 @@ Prepare [hisat2](https://www.nature.com/articles/s41587-019-0201-4) index files 
 
 For an example look at this [file](hisat_indexes.sh).
 
-Add file paths to [config file](config/config.yaml) in `hisat_index`
+Add file paths to [config file](config/config.yml) in `hisat_index`
 
 ### Haptree-X
 Haplotype phasing is performed using 3 different tools, WhatsHap, Shapeit and Haptree-X. While the other methods are automaticaly included in the pipeline through conda environments or docker images, Haptree-X should be installed locally. In particular, you would just need to download the last released executable file, an example follows.
 
 The Haptree-X excecutable file can be downloaded from [here](https://github.com/0xTCG/haptreex/releases).
 
-Add path to [config file](config/config.yaml) in `haptreex_exe`
+Add path to [config file](config/config.yml) in `haptreex_exe`
 
 ### Other reference files 
 
