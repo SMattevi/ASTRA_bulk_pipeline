@@ -35,6 +35,8 @@ phasedHP<-opt$haptreex
 
 ASE<-opt$ase
 
+pdf(paste0(ASE,".pdf"))
+
 df_sh<-read_shapeit(varcall,phased,sample_name = opt$sample)
 df_sh<-df_sh[df_sh$CHROM==chromosome,]
 
@@ -50,6 +52,8 @@ df_tmp<-df_compl
 df_compl<-biallmonoall(df_compl)
 
 df_ph<-manualP(df_compl)
+df_ph$tech=""
+saveRDS(df_ph,paste0(ASE,".RDS"))
 
 final_df<-prep_outcome(df_initial = olaps,df_phased = df_ph[df_ph$Ref!="NP",])
 final_df$Tool<-ifelse(is.na(final_df$Tool),"Manual",final_df$Tool)
@@ -57,3 +61,4 @@ final_df$Tool<-ifelse(is.na(final_df$Tool),"Manual",final_df$Tool)
 final_df$Tool<-as.factor(final_df$Tool)
 
 write.table(final_df[,c(1:7)],opt$out, sep="\t",quote=F, row.names = F,col.names = F)
+dev.off()
