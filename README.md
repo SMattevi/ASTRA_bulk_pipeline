@@ -55,9 +55,11 @@ The original Lorals tool's maintenance has been discontinued by its developers. 
 
 ### Installation
 
-To install this version of the tool, you must compile the included `setup.py` file. Please follow the standard procedure, which is also outlined in the [original Lorals GitHub documentation](https://github.com/LappalainenLab/lorals?tab=readme-ov-file#lorals):
+To install this version of the tool, you must unzip the lorals.tar.gz file and compile the included `setup.py` file. Please follow the standard procedure, which is also outlined in the [original Lorals GitHub documentation](https://github.com/LappalainenLab/lorals?tab=readme-ov-file#lorals):
 
-```bash 
+```bash
+tar -xzvf lorals.tar.gz
+cd lorals
 python3 setup.py install
 ```
 
