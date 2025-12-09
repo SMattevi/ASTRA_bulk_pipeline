@@ -119,11 +119,11 @@ rule QC_bam_atac:
     conda: "../envs/samtools.yml"
     output:
         temp("results_{sample_id}/atac/mapping_result/atac.positionsort.MAPQ20.bam")
-    log: "logs/{sample_id}/atac/alignmentQC.log"
+    log: "logs/{sample_id}/atac_alignmentQC_summ.log"
     shell:
         """ samtools view -f 0x2 -b -h -q 20 -@ {threads} {input} -o {output} 2> {log}
         samtools index -@ {threads} {output} 2>> {log}
-        bash workflow/scripts/createsummary.sh {input} {output} {threads} atac 2>> {log}"""
+        bash workflow/scripts/createsummary.sh {input} {output} {threads} atac {wildcards.sample_id} 2>> {log}"""
 
 #modify bam header-> add read group needed for ASEReadCounter
 rule GATK_AddorRep:
