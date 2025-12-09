@@ -1,13 +1,12 @@
 rule alignment_LR:
     input:
-        expand("{path}/{sample}.fastq.gz", path=config["path_LR"],sample=config["fastqs_LR"],sep=",")
+        config["fastqs_LR"]
     threads: 
         config["threads_num"]
     params: 
         genome_ref = config["genome_fa"]
     output:
         bam="results_{sample_id}/LR/alignment/{sample_id}_sorted.bam",
-        guppy_all=temp("results_{sample_id}/LR/alignment/{sample_id}.fastq")
     conda:
         "../envs/longreads.yml"
     shell:
@@ -25,7 +24,6 @@ rule alignment_LR:
         samtools index {output.bam}
 
         rm tmp/ref_LR_alignment/ref.fa
-        cat {input} > {output.guppy_all}
         """
 
 rule add_chr:
@@ -35,19 +33,17 @@ rule add_chr:
         "results_{sample_id}/phased/manual_refinment_chr.vcf.gz"
     shell:
         """
-        for i in {1..22}; do echo "$i chr$i"; done > chr_map.txt
+        for i in {{1..22}}; do echo "$i chr$i"; done > chr_map.txt
         echo "X chrX" >> chr_map.txt
         echo "Y chrY" >> chr_map.txt
         echo "MT chrMT" >> chr_map.txt
-        bcftools annotate --rename-chrs chr_map.txt \
-        {input} \
-        -Ov -o {output} 
+        bcftools annotate --rename-chrs chr_map.txt {input} -Ov -o {output} 
         rm chr_map.txt
         """
 
 rule make_new_vcf:
     input: 
-        bam="results_{sample_id}/LR/alignment/{sample}_sorted.bam",
+        bam="results_{sample_id}/LR/alignment/{sample_id}_sorted.bam",
         vcf="results_{sample_id}/phased/manual_refinment_chr.vcf.gz"
     params:
         reffa=config["genome_fa"],
@@ -75,14 +71,14 @@ rule make_new_vcf:
 
 rule hap_aligner:
     input:
-        fastq="results_{sample_id}/LR/alignment/{sample_id}.fastq"
+        fastq=config["fastqs_LR"],
         new_vcf_hap1="results_{sample_id}/LR/lorals/make_new_vcf/{sample_id}_sorted_hap1.fa",
-        new_vcf_hap2="results_{sample_id}/LR/lorals/make_new_vcf/{sample_id}_sorted_hap2.fa""
+        new_vcf_hap2="results_{sample_id}/LR/lorals/make_new_vcf/{sample_id}_sorted_hap2.fa"
     output:
         "results_{sample_id}/LR/lorals/hap_aligner/{sample_id}_reads_aln_sorted.merged.bam"
     params:
-        newdir=subpath(output, parent=True),
-        input_suff=subpath(output, strip_suffix="hap1.fa")
+        newdir="results_{sample_id}/LR/lorals/hap_aligner/",
+        input_suff="results_{sample_id}/LR/lorals/make_new_vcf/{sample_id}_sorted_"
     conda:
         "../envs/lorals.yml"
     shell:
@@ -114,11 +110,11 @@ rule calc_annotate_ase:
 
 rule alignment_transcript:
     input:
-        "results_{sample_id}/LR/alignment/{sample_id}.fastq"
+        config["fastqs_LR"]
     threads: 
         config["threads_num"]
     params: 
-        transcripts_ref = config["transcripts_fa"]
+        transcript_ref= config["transcriptome_fa"]
     output:
         sam=temp("results_{sample_id}/LR/alignment/{sample_id}_transcript.sam"),
         bam="results_{sample_id}/LR/alignment/{sample_id}_transcript.bam"
@@ -126,7 +122,7 @@ rule alignment_transcript:
         "../envs/longreads.yml"
     shell:
         """ 
-        minimap2 -ax map-ont {params.transcripts_ref} {input} > {output.sam}
+        minimap2 -ax map-ont {params.transcript_ref} {input} > {output.sam}
         # Sort alignment results with samtools
         samtools sort {output.sam} -o {output.bam}
         samtools index {output.bam}
@@ -135,7 +131,7 @@ rule alignment_transcript:
 rule calc_annotate_ast:
     input:
         bam_trs="results_{sample_id}/LR/alignment/{sample_id}_transcript.bam",
-        bam_gen="results_{sample_id}/LR/alignment/{sample}_sorted.bam",
+        bam_gen="results_{sample_id}/LR/alignment/{sample_id}_sorted.bam",
         ase="results_{sample_id}/LR/lorals/ase/ase.tsv"
     output:
         ast="results_{sample_id}/LR/lorals/ast/asts.tsv_asts_quant.tsv"
