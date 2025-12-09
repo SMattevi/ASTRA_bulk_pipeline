@@ -6,6 +6,7 @@ tech:
     - rna
     - atac
     - genome
+    - LRRna
 
 ########### RNA ###########
 fastqs_rna: ##prefix input name for all the lane of the sample
@@ -26,6 +27,15 @@ fastqs_atac_lanes: ##prefix input name for all the lane of the sample (supposed 
   - "BJ_lane2"
 
 path_atac: "raw_data/atac"
+
+########## LONG READS ##########
+fastqs_atac_lanes: ##prefix input name for all the lane of the sample (supposed extension _R1.fastq.gz and _R2.fastq.gz)
+  - "BJ"
+
+path_LR: "raw_data/LR"
+
+hapcut_path: "resources/lorals/HapCUT2VCF.py"
+t2gene: "resources/transcriptome/Human-GENCODE.V.46/transcript2gene.txt"
 
 ########## GENOME VCF ##########
 genome_vcf: "raw_data/snparray/imputed.vcf.gz"
