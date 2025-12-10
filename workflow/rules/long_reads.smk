@@ -11,19 +11,19 @@ rule alignment_LR:
         "../envs/longreads.yml"
     shell:
         """ 
-        mkdir -p tmp/ref_LR_alignment
+        mkdir -p tmp_LR
         # Add if missing "chr" to reference - needed for following steps
-        less {params.genome_ref} | sed -e '/^>chr/!s/^>/>chr/' > tmp/ref_LR_alignment/ref.fa
+        less {params.genome_ref} | sed -e '/^>chr/!s/^>/>chr/' > tmp_LR/ref.fa
 
         mkdir -p results_{wildcards.sample_id}/LR/alignment
         # Align with minimap
-        minimap2 -ax splice -uf -k14 tmp/ref_LR_alignment/ref.fa {input} > results_{wildcards.sample_id}/LR/alignment/BJ.sam
+        minimap2 -ax splice -uf -k14 tmp_LR/ref.fa {input} > results_{wildcards.sample_id}/LR/alignment/BJ.sam
 
         # Sort alignment results with samtools
         samtools sort results_{wildcards.sample_id}/LR/alignment/{wildcards.sample_id}.sam -o {output.bam}
         samtools index {output.bam}
 
-        rm tmp/ref_LR_alignment/ref.fa
+        rm tmp_LR/ref.fa
         """
 
 rule add_chr:
