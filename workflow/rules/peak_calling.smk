@@ -41,4 +41,4 @@ rule annotate_peaks:
         "results_{sample_id}/atac/peaks/annotated.pdf"
     params: config["TSS_region"]
     shell:
-        "Rscript workflow/scripts/annotate_peaks.R {params}"
+        "Rscript workflow/scripts/annotate_peaks.R {params} {sample_id}"

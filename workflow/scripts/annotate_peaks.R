@@ -10,8 +10,9 @@ library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 tss_range<-as.integer(args[1])
+sample<-args[2]
 
-path="results/atac/peaks/MACS2/atac_features_BlacklistRemoved.bed.gz"
+path=paste0("results_",sample,"/atac/peaks/MACS2/atac_features_BlacklistRemoved.bed.gz")
 
 peak_file <- readPeakFile(path)
 peak_file <- diffloop::addchr(peak_file)
@@ -23,11 +24,11 @@ flank_gene_IDS<-as.data.frame(peakAnno@anno$flank_geneIds)
 annotat<-as.data.frame(peakAnno@anno)
 
 annotat$seqnames<-gsub("chr","",as.character(annotat$seqnames))
-write.table(annotat,paste0("results/atac/peaks/annotated.tsv"),sep="\t",quote=F,row.names = F)
+write.table(annotat,paste0("results_",sample,"/atac/peaks/annotated.tsv"),sep="\t",quote=F,row.names = F)
 
 gene_list<-unique(separate_rows(flank_gene_IDS, 'peakAnno@anno$flank_geneIds', convert = TRUE, sep = ";"))
 
-pdf(paste0("results/atac/peaks/annotated.pdf"))
+pdf(paste0("results_",sample,"/atac/peaks/annotated.pdf"))
 plotAnnoPie(peakAnno)
 plotDistToTSS(peakAnno,
               title="Distribution of transcription factor-binding loci\nrelative to TSS")
