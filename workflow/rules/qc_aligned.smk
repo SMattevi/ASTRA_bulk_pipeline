@@ -90,6 +90,16 @@ rule featureCount:
     input:
         R1=expand("{path}/{sample}_R1.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=","),
         R2=expand("{path}/{sample}_R2.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=",")
+        # R1=lambda wildcards: find_fastqs(
+        #     path=config["SAMPLES"][wildcards.sample_id]["path_rna"],
+        #     prefixes=config["SAMPLES"][wildcards.sample_id]["fastqs_rna"],
+        #     read_num=1
+        # ),
+        # R2=lambda wildcards: find_fastqs(
+        #     path=config["SAMPLES"][wildcards.sample_id]["path_rna"],
+        #     prefixes=config["SAMPLES"][wildcards.sample_id]["fastqs_rna"],
+        #     read_num=2
+        # )
     output:
         outfile="results_{sample_id}/rna/transcripts_quant/quant.sf"
     conda:
@@ -133,7 +143,7 @@ rule GATK_AddorRep:
         "results_{sample_id}/atac/mapping_result/atac.final.bam"
     conda: "../envs/gatk.yml"
     params:
-        samp=config["sample_name"]
+        samp="{sample_id}"
     log: "logs/{sample_id}/atac_addorrep.log"
     shell:
         """ gatk AddOrReplaceReadGroups -I {input} -O {output} -RGLB DNA -RGPL ILLUMINA -RGPU atac -RGSM atac_{params.samp} -VALIDATION_STRINGENCY SILENT 2> {log}"""

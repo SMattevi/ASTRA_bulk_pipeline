@@ -104,7 +104,7 @@ rule phasing_SHAPEIT4:
         "../envs/shapeit.yml"
     threads: config["threads_num"]
     params: 
-        sex=config["sex"]
+        sex=config["sex"] #config["SAMPLES"][wildcards.sample_id]["sex"]
     shell:
         """  if [ {wildcards.chrom} == "X" ]
         then
@@ -127,9 +127,10 @@ rule phasing_haptreex:
     params:
         gtffile=config["genome_gtf"],
         haptreex=config["haptreex_exe"],
-        tec=config["tech"],
+        tec=config["tech"], #config["SAMPLES"][wildcards.sample_id]["tech"]
         htslib=config["htslib_path"],
         sampleid="{sample_id}"
+    conda: "../envs/samtools.yml"
     shell:
         """ bcftools view {input.vcf} -Ov -o temp.vcf
         export LD_LIBRARY_PATH={params.htslib}
@@ -203,6 +204,10 @@ rule tsv_to_vcf:
 rule bgzip_and_indexing_man:
     input:
         expand("results_{sample_id}/phased/manual_refinment{chrom}.vcf",chrom=config["chromosomes_to_phase"],sample_id=config["sample_name"])
+        #lambda wildcards: 
+            # expand("results_{sample_id}/phased/manual_refinment{chrom}.vcf",
+            #        chrom=config["chromosomes_to_phase"], # GLOBAL CHROMS LIST
+            #        sample_id=wildcards.sample_id)
     output: 
         vcf="results_{sample_id}/phased/manual_refinment.vcf.gz",
         vcftbi="results_{sample_id}/phased/manual_refinment.vcf.gz.tbi"

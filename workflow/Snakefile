@@ -25,7 +25,7 @@ if "atac" in config["tech"]:
     myoutput.append(expand("results_{sample_id}/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="atac",sample_id=config["sample_name"]))
 
 if "LRRna" in config["extra_tech"]:
-    myoutput.append(expand("results_{sample_id}/LR/lorals/ast/asts.tsv_asts_quant.tsv",sample_id=config["sample_name"]))
+    myoutput.append(expand("results_{sample_id}/LR/lorals/ast/{sample_id}_asts_quant.tsv",sample_id=config["sample_name"]))
     myoutput.append(expand("results_{sample_id}/LR/lorals/ase/ase.tsv",sample_id=config["sample_name"]))
 
 if "seesaw" in config["extra_analysis"]:

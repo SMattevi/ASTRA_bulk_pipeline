@@ -1,12 +1,13 @@
 rule het_selection_genome:
     input: 
         config["genome_vcf"]
+        #lambda wildcards: config["SAMPLES"][wildcards.sample_id]["genome_vcf"]
     output:
         fin="results_{sample_id}/genome/filtration/snps_het.vcf.gz",
         inter=temp("results_{sample_id}/genome/filtration/snps_het_1.vcf.gz"),
         prephased=temp("results_{sample_id}/genome/prephasing/pre_phased.vcf.gz")
     params:
-        samp=config["sample_name"],
+        samp="{sample_id}",
         samplefile="results_{sample_id}/genome/filtration/sample.txt",
         outdir="results_{sample_id}/genome/prephasing"
     conda: "../envs/samtools.yml"

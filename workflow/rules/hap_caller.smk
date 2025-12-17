@@ -105,7 +105,7 @@ rule het_selection_exome:
         fin="results_{sample_id}/exome/filtration/snps_het.vcf.gz",
         inter=temp("results_{sample_id}/exome/filtration/snps_het_1.vcf.gz")
     params:
-        samp=config["sample_name"],
+        samp="{sample_id}",
         samplefile="results_{sample_id}/exome/filtration/sample.txt"
     conda: "../envs/samtools.yml"
     shell:
@@ -121,7 +121,7 @@ rule het_selection_atac:
         fin="results_{sample_id}/atac/filtration/snps_het.vcf.gz",
         inter=temp("results_{sample_id}/atac/filtration/snps_het_1.vcf.gz")
     params:
-        samp=config["sample_name"],
+        samp="{sample_id}",
         samplefile="results_{sample_id}/atac/filtration/sample.txt"
     conda: "../envs/samtools.yml"
     shell:
@@ -177,6 +177,7 @@ rule GATK_haplotypeCall:
         --variant {output.vcf} \
         --restrict-alleles-to BIALLELIC \
         -select 'vc.getHetCount()==1' --select-type-to-include SNP \
+        --exclude-filtered \
         -O {output.vcf_biall}
         """
 
