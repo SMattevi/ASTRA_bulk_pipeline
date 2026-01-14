@@ -1,44 +1,33 @@
-sample_name: "BJ"
-
-#comment if not used
-tech:
-    - exome
-    - rna
-    - atac
-    - genome
-extra_tech:
-    - LRRna
-
-########### RNA ###########
-fastqs_rna: ##prefix input name for all the lane of the sample
-    - "BJ"
-
-path_rna: "raw_data/rna"
-
-########## EXOME ##########
-fastqs_exome: ##prefix input name for all the lane of the sample
-    - "BJ_r1"
-    - "BJ_r2"
-
-path_exome: "raw_data/exome"
-
-########## ATAC ##########
-fastqs_atac_lanes: ##prefix input name for all the lane of the sample (supposed extension _R1.fastq.gz and _R2.fastq.gz)
-  - "BJ_lane1"
-  - "BJ_lane2"
-
-path_atac: "raw_data/atac"
-
-########## LONG READS ##########
-fastqs_LR: ##prefix input name for all the lane of the sample (supposed extension _R1.fastq.gz and _R2.fastq.gz)
-  - "path/BJ.fastq"
+SAMPLES: 
+  BJ:
+    tech: ["exome","rna","atac","genome"]
+    LRRna: True
+    fastqs_rna: "BJ" ##prefix input name for all the lane of the sample
+    path_rna: "/path/raw_data/rna/"
+    fastqs_exome: [ "BJ_r1","BJ_r2"] ##prefix input name for all the lane of the sample
+    path_exome: "/path/raw_data/exome/"
+    fastqs_atac_lanes: ["SRR3571009","SRR3571010"] ##prefix input name for all the lane of the sample (supposed extension _R1.fastq.gz and _R2.fastq.gz)
+    path_atac: "/path/raw_data/atac/"
+    fastqs_LR: "path/BJ_direct_fastq/guppy_BJ/all_guppy.fastq" ##prefix input name for all the lane of the sample (supposed extension _R1.fastq.gz and _R2.fastq.gz)
+    sex: "male" # or "female"
+    genome_vcf: "/path/raw_data/SNParray/imputedALL.vcf.gz"
+  HPD04:
+    tech: ["exome","rna","genome"]
+    LRRna: True
+    fastqs_rna: "HPD04" ##prefix input name for all the lane of the sample
+    path_rna: "/path/raw_data/rna"
+    fastqs_exome: [ "HPD04_r1","HPD04_r2"] ##prefix input name for all the lane of the sample
+    path_exome: "/path/raw_data/exome"
+    #fastqs_atac_lanes: ["SRR3571009","SRR3571010"] ##prefix input name for all the lane of the sample (supposed extension _R1.fastq.gz and _R2.fastq.gz)
+    #path_atac: "/path/raw_data/atac"
+    fastqs_LR: "path/HPD04_direct_fastq/guppy_HPD04/all_guppy.fastq" ##prefix input name for all the lane of the sample (supposed extension _R1.fastq.gz and _R2.fastq.gz)
+    sex: "male" # or "female"
+    genome_vcf: "/path/raw_data/SNParray/imputedALL.vcf.gz"
 
 hapcut_path: "resources/lorals/HapCUT2VCF.py"
 t2gene: "resources/transcriptome/Human-GENCODE.V.46/transcript2gene.txt"
 transcriptome_fa: "resources/transcriptome/hg38.fa"
-########## GENOME VCF ##########
-genome_vcf: "raw_data/snparray/imputed.vcf.gz"
-    
+   
 ########## REF/INDEX ##########    
 #hisat index file-> check http://daehwankimlab.github.io/hisat2/howto/ for the creation
 hisat_index: "resources/indexes/hisat2/human/hg38/genome_snp_tran"
@@ -62,6 +51,7 @@ haptreex_exe: "resources/haptreex"
 htslib_path: "path/to/haptreex/lib"
 
 bl_file: "resources/hg38_blacklist.bed"
+lorals_conda_env: "resources/envs/lorals"
 
 ########## PARAMS ########## 
 DP: 10 #filter atac SNPs for read depth
@@ -69,7 +59,10 @@ AD: 2 #filter RNA SNPs for minimum allelic depth of 2 on each allele
 TSS_region: 5000
 threads_num: 4
 memory: 1G
-sex: "male" # or "female"
+
+########## PARAMS manual phasing ########## 
+OD: 10 #filter RNA SNPs for overall read depth (computed by ASEReadCounter)
+MAD: 0 #filter RNA SNPs for minimum allelic depth of 0 (computed by ASEReadCounter)
 
 chromosomes_to_phase: 
   - 1 #or "chr1" etc

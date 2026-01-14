@@ -130,3 +130,5 @@ dmypy.json
 
 results_*
 .snakemake
+workflow_phase_1_complete.txt
+resources/lorals/

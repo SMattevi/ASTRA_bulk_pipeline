@@ -39,8 +39,18 @@ rule transcripts_extraction:
 rule isoform_quantification:
     input: 
         transcripts="results_{sample_id}/seesaw/transcripts.fa",
-        fq1=expand("{path}/{sample}_R1.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=","),
-        fq2=expand("{path}/{sample}_R2.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=",")
+        #fq1=expand("{path}/{sample}_R1.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=","),
+        #fq2=expand("{path}/{sample}_R2.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=",")
+        fq1=lambda wildcards: find_fastqs(
+            path=config["SAMPLES"][wildcards.sample_id]["path_rna"],
+            prefixes=config["SAMPLES"][wildcards.sample_id]["fastqs_rna"],
+            read_num=1
+        ),
+        fq2=lambda wildcards: find_fastqs(
+            path=config["SAMPLES"][wildcards.sample_id]["path_rna"],
+            prefixes=config["SAMPLES"][wildcards.sample_id]["fastqs_rna"],
+            read_num=2
+        )
     output:
         final="results_{sample_id}/seesaw/salmon/quant.sf",
         txome=directory("results_{sample_id}/seesaw/salmon/diploid_txome")

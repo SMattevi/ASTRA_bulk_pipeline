@@ -40,29 +40,45 @@ rule SplitNCigarReads:
         -O {output} \
         2> {log}"""
     
+def get_recal_input(wildcards):
+    """
+    Determines the input BAM based on the technology (tec).
+    """
+    if wildcards.tec == "exome":
+        return f"results_{wildcards.sample_id}/exome/alignment/exome.positionsort.bam"
+    elif wildcards.tec == "rna":
+        return f"results_{wildcards.sample_id}/rna/alignment/rna.splitted.bam"
+    else:
+        # Fallback/Error handling for ATAC or other techs if needed
+        return f"results_{wildcards.sample_id}/{wildcards.tec}/alignment/{wildcards.tec}.bam"
+        
 rule BaseRecalibrator:
     input:
-        myinput 
+        get_recal_input  # Snakemake calls this function for every sample/tec pair
     output: 
         bam=temp("results_{sample_id}/{tec}/recalibration/{tec}.positionsort.gatkgroup.bam"),
         table="results_{sample_id}/{tec}/recalibration/recal_data.table"
     conda: "../envs/gatk.yml"
     params: 
         sites=config["known_sites"], 
-        fa=config["genome_fa"],
-        samp="{sample_id}"
+        fa=config["genome_fa"]
     threads: config["threads_num"]
     log: "logs/{sample_id}/{tec}_BaseRecalibrator.log"
     shell:
-        """ if [[ {wildcards.tec} == "exome" ]]
-        then
-            input_real="results_{params.samp}/exome/alignment/exome.positionsort.bam"
-        else
-            input_real="results_{params.samp}/rna/alignment/rna.splitted.bam"
-        fi
-        echo $input_real
-        gatk AddOrReplaceReadGroups -I $input_real -O {output.bam} -RGLB DNA -RGPL ILLUMINA -RGPU {wildcards.tec} -RGSM {wildcards.tec}_{params.samp} -VALIDATION_STRINGENCY SILENT 2> {log}
-        gatk BaseRecalibrator -I {output.bam} --known-sites {params.sites} -R {params.fa} -O {output.table} 2>> {log} """
+        """
+        # We use {input} directly now instead of shell logic to find the file
+        gatk AddOrReplaceReadGroups \
+            -I {input} \
+            -O {output.bam} \
+            -RGLB DNA -RGPL ILLUMINA -RGPU {wildcards.tec} -RGSM {wildcards.tec}_{wildcards.sample_id} \
+            -VALIDATION_STRINGENCY SILENT 2> {log}
+
+        gatk BaseRecalibrator \
+            -I {output.bam} \
+            --known-sites {params.sites} \
+            -R {params.fa} \
+            -O {output.table} 2>> {log}
+        """
 
 rule index:
     input:
@@ -88,18 +104,18 @@ rule BQSR:
 
 rule featureCount:
     input:
-        R1=expand("{path}/{sample}_R1.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=","),
-        R2=expand("{path}/{sample}_R2.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=",")
-        # R1=lambda wildcards: find_fastqs(
-        #     path=config["SAMPLES"][wildcards.sample_id]["path_rna"],
-        #     prefixes=config["SAMPLES"][wildcards.sample_id]["fastqs_rna"],
-        #     read_num=1
-        # ),
-        # R2=lambda wildcards: find_fastqs(
-        #     path=config["SAMPLES"][wildcards.sample_id]["path_rna"],
-        #     prefixes=config["SAMPLES"][wildcards.sample_id]["fastqs_rna"],
-        #     read_num=2
-        # )
+        #R1=expand("{path}/{sample}_R1.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=","),
+        #R2=expand("{path}/{sample}_R2.fastq.gz", path=config["path_rna"],sample=config["fastqs_rna"],sep=",")
+        R1=lambda wildcards: find_fastqs(
+            path=config["SAMPLES"][wildcards.sample_id]["path_rna"],
+            prefixes=config["SAMPLES"][wildcards.sample_id]["fastqs_rna"],
+            read_num=1
+        ),
+        R2=lambda wildcards: find_fastqs(
+            path=config["SAMPLES"][wildcards.sample_id]["path_rna"],
+            prefixes=config["SAMPLES"][wildcards.sample_id]["fastqs_rna"],
+            read_num=2
+        )
     output:
         outfile="results_{sample_id}/rna/transcripts_quant/quant.sf"
     conda:

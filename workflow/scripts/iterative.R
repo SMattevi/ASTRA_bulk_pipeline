@@ -16,8 +16,11 @@ option_list = list(
   make_option(c("-a","--ase"), type="character", default=NULL,
               help="ASE table", metavar="character"),
   make_option(c("-n","--sample"), type="character", default=NULL,
-              help="ASE table", metavar="character")
-
+              help="ASE table", metavar="character"),
+  make_option(c("-r","--reads"), type="integer", default=2,
+              help="Minimum reads number for position", metavar="integer"),
+  make_option(c("-d","--od"), type="integer", default=10,
+              help="Overall depth", metavar="integer")            
 );
 
 opt_parser = OptionParser(option_list=option_list);
@@ -46,7 +49,7 @@ df_hp<-df_hp[df_hp$CHROM==chromosome,]
 
 olaps<-conshap(df1=df_sh,df2 = df_hp,BMsel = BMsel,DF1="WShapeit",DF2="HapTreeX")
 
-df_compl<-addASE(olaps,ASE,BMsel)
+df_compl<-addASE(olaps,ASE,BMsel,reads=opt$reads,od = opt$od)
 df_tmp<-df_compl
 
 df_compl<-biallmonoall(df_compl)

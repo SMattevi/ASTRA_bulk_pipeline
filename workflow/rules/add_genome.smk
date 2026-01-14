@@ -1,7 +1,7 @@
 rule het_selection_genome:
     input: 
-        config["genome_vcf"]
-        #lambda wildcards: config["SAMPLES"][wildcards.sample_id]["genome_vcf"]
+        # config["genome_vcf"]
+        lambda wildcards: config["SAMPLES"][wildcards.sample_id]["genome_vcf"]
     output:
         fin="results_{sample_id}/genome/filtration/snps_het.vcf.gz",
         inter=temp("results_{sample_id}/genome/filtration/snps_het_1.vcf.gz"),

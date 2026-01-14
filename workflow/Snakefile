@@ -1,46 +1,190 @@
+# Snakefile
+
 configfile: "config/config.yml"
 
-myinput=list()
-myoutput=list()
+# Helper function to find existing fastq files given potential suffixes
+def find_fastqs(path, prefixes, read_num):
+    import os
+    
+    # 1. Clean the path of any accidental trailing spaces/newlines
+    path = path.strip()
+    
+    # 2. Define suffixes
+    if read_num == 1:
+        suffixes = ["_1.fastq.gz", "_R1.fastq.gz", "_1.fq.gz", ".R1.fastq.gz"]
+    elif read_num == 2:
+        suffixes = ["_2.fastq.gz", "_R2.fastq.gz", "_2.fq.gz", ".R2.fastq.gz"]
+    else:
+        raise ValueError(f"Invalid read number: {read_num}")
+
+    found_files = []
+    
+    # Ensure prefixes is a list
+    if isinstance(prefixes, str):
+        prefixes = [prefixes]
+
+    for prefix in prefixes:
+        prefix = prefix.strip()
+        match_found = False
+        
+        for suffix in suffixes:
+            potential_file = os.path.join(path, f"{prefix}{suffix}")
+            
+            # DEBUG PRINT: This will show up in your terminal
+            # print(f"DEBUG: Looking for: '{potential_file}'")
+            
+            if os.path.exists(potential_file):
+                found_files.append(potential_file)
+                match_found = True
+                break 
+        
+        if not match_found:
+            # This specific print helps identify which prefix/suffix combo failed
+            print(f"ERROR: Could not find any match for prefix '{prefix}' in '{path}'")
+
+    if not found_files:
+        raise FileNotFoundError(f"No fastq files found for path: {path} with prefixes: {prefixes}")
+        
+    return found_files
+    
+# --- 1. SETUP: Retrieve Global Lists and Sample IDs ---
+
+# List of all sample IDs (keys in the SAMPLES dict)
+ALL_SAMPLE_IDS = list(config["SAMPLES"].keys())
+
+# The Global Chromosome List (used for ASE where appropriate)
+GLOBAL_CHROMS = config.get("chromosomes_to_phase", [])
 
 
-if "exome" in config["tech"] and "rna" in config["tech"]:
-    myinput.append(expand("results_{sample_id}/{tec}/alignment/{tec}.positionsort.bam",tec="exome",sample_id=config["sample_name"]))
-    myoutput.append(expand("results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",tec="exome",sample_id=config["sample_name"]))
-    myinput.append(expand("results_{sample_id}/{tec}/alignment/{tec}.splitted.bam",tec="rna",sample_id=config["sample_name"]))
-    myoutput.append(expand("results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",tec="rna",sample_id=config["sample_name"]))
-    myoutput.append(expand("results_{sample_id}/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="rna",sample_id=config["sample_name"]))
-    myoutput.append(expand("results_{sample_id}/rna/transcripts_quant/quant.sf",sample_id=config["sample_name"]))
-elif "exome" in config["tech"]:
-    myinput.append(expand("results_{sample_id}/{tec}/alignment/{tec}.positionsort.bam",tec="exome",sample_id=config["sample_name"]))
-    myoutput.append(expand("results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",tec="exome",sample_id=config["sample_name"]))
-elif "rna" in config["tech"]:
-    myinput.append(expand("results_{sample_id}/{tec}/alignment/{tec}.splitted.bam",tec="rna",sample_id=config["sample_name"]))
-    myoutput.append(expand("results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",tec="rna",sample_id=config["sample_name"]))
-    myoutput.append(expand("results_{sample_id}/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="rna",sample_id=config["sample_name"]))
-    myoutput.append(expand("results_{sample_id}/rna/transcripts_quant/quant.sf",sample_id=config["sample_name"]))
+# --- 2. FUNCTION: Collect ALL Final Outputs (from all samples) ---
 
-if "atac" in config["tech"]:
-    myoutput.append(expand("results_{sample_id}/atac/peaks/annotated.tsv",sample_id=config["sample_name"]))
-    myoutput.append(expand("results_{sample_id}/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec="atac",sample_id=config["sample_name"]))
+def get_all_final_outputs():
+    """Generates a master list of all expected final output files 
+       by iterating through all samples and their specific configurations.
+    """
+    all_outputs = []
 
-if "LRRna" in config["extra_tech"]:
-    myoutput.append(expand("results_{sample_id}/LR/lorals/ast/{sample_id}_asts_quant.tsv",sample_id=config["sample_name"]))
-    myoutput.append(expand("results_{sample_id}/LR/lorals/ase/ase.tsv",sample_id=config["sample_name"]))
+    # Iterate over the configuration for every sample
+    for sample_id, data in config["SAMPLES"].items():
+        
+        # Retrieve sample-specific lists/flags, defaulting to safe values
+        sample_techs = data.get("tech", [])
+        do_lrrna = data.get("LRRna", False)
+        
+        # Note: extra_analysis is handled globally in your config, but we check if 
+        # a sample specific key exists first, or default to the global list if defined.
+        sample_extra_analysis = data.get("extra_analysis", config.get("extra_analysis", []))
+        
+        
+        # --- A. EXOME / RNA / ATAC Logic ---
+        
+        if "exome" in sample_techs:
+            # Exome output (snps_het.vcf.gz)
+            all_outputs.extend(
+                expand("results_{sample_id}/exome/filtration/snps_het.vcf.gz", sample_id=sample_id)
+            )
 
-if "seesaw" in config["extra_analysis"]:
-    myoutput.append(expand("results_{sample_id}/seesaw/salmon/quant.sf",sample_id=config["sample_name"]))
+        if "rna" in sample_techs:
+            # RNA outputs
+            all_outputs.extend(
+                expand(["results_{sample_id}/rna/filtration/snps_het.vcf.gz", 
+                        "results_{sample_id}/rna/transcripts_quant/quant.sf"], 
+                       sample_id=sample_id)
+            )
+            # RNA ASE output (uses global chroms)
+            all_outputs.extend(
+                expand("results_{sample_id}/rna/ASE{chrom}", chrom=GLOBAL_CHROMS, sample_id=sample_id)
+            )
 
-myoutput.append(expand("results_{sample_id}/phased/shapeit_whatshap.vcf.gz",sample_id=config["sample_name"]))
-myoutput.append(expand("results_{sample_id}/merged_vcf/snps_het.vcf.gz",sample_id=config["sample_name"]))
-myoutput.append(expand("results_{sample_id}/phased/manual_refinment.vcf.gz",sample_id=config["sample_name"]))
+        if "atac" in sample_techs:
+            # ATAC outputs (peaks/annotated.tsv)
+            all_outputs.extend(
+                expand("results_{sample_id}/atac/peaks/annotated.tsv", sample_id=sample_id)
+            )
+            # ATAC ASE output (uses global chroms)
+            all_outputs.extend(
+                expand("results_{sample_id}/atac/ASE{chrom}", chrom=GLOBAL_CHROMS, sample_id=sample_id)
+            )
+        
+        
+        # --- B. Long-Read RNA Logic (LRRna) ---
+        
+        if do_lrrna:
+            # LRRna outputs
+            all_outputs.extend(
+                expand(["results_{sample_id}/LR/lorals/ast/{sample_id}_asts_quant.tsv", 
+                        "results_{sample_id}/LR/lorals/ase/ase.tsv"], 
+                       sample_id=sample_id)
+            )
 
+        # --- C. Extra Analysis Logic (seesaw) ---
+        
+        if "seesaw" in sample_extra_analysis:
+            # Seesaw outputs
+            all_outputs.extend(
+                expand("results_{sample_id}/seesaw/salmon/quant.sf", sample_id=sample_id)
+            )
+            
+        # --- D. Final Common Outputs (Regardless of technology) ---
+
+        all_outputs.extend(
+            expand(["results_{sample_id}/phased/shapeit_whatshap.vcf.gz",
+                    "results_{sample_id}/merged_vcf/snps_het.vcf.gz",
+                    "results_{sample_id}/phased/manual_refinment.vcf.gz"], 
+                   sample_id=sample_id)
+        )
+
+    return all_outputs
+
+
+# --- 3. TARGET RULE: Phase 1 Completion (The Aggregation Input) ---
+
+# This rule depends on ALL individual sample outputs being generated.
 rule all:
+    # myoutput is now dynamically generated by the function
     input:
-        myoutput
-        #"results/exome/recalibration/exome.positionsort.gatkgroup.bam",
-        #expand("results/{tec}/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec=config["tech"])
-        #expand("results/exome/ASE{chrom}",chrom=config["chromosomes_to_phase"],tec=config["tech"])
+        get_all_final_outputs()
+    output:
+        # Dummy file to mark completion of Phase 1
+        "workflow_phase_1_complete.txt"
+    shell:
+        "echo 'All per-sample files generated. Ready for aggregation.' > {output}"
+
+
+# # --- 4. START OF PHASE 2: NEW AGGREGATION WORKFLOW (Example Rules) ---
+
+# # Define subsets of samples for specific aggregation tasks (to ensure the files exist)
+
+# SAMPLES_WITH_RNA = [s for s, data in config["SAMPLES"].items() if "rna" in data.get("tech", [])]
+
+
+# rule aggregate_rna_quant:
+#     """Combines all RNA quantification files into a single expression matrix 
+#        for all samples that ran RNA-Seq.
+#     """
+#     input:
+#         expand("results_{sample_id}/rna/transcripts_quant/quant.sf", 
+#                sample_id=SAMPLES_WITH_RNA)
+#     output:
+#         "analysis_phase_2/aggregated_expression_matrix.tsv"
+#     params:
+#         script = "scripts/combine_quant_files.R"
+#     shell:
+#         "Rscript {params.script} {input} -o {output}"
+
+
+# rule merge_all_phased_vcfs:
+#     """Merges all final phased VCFs across ALL samples."""
+#     input:
+#         expand("results_{sample_id}/phased/manual_refinment.vcf.gz", 
+#                sample_id=ALL_SAMPLE_IDS)
+#     output:
+#         "analysis_phase_2/master_phased_variants.vcf.gz"
+#     shell:
+#         "bcftools merge {input} -Oz -o {output}"
+
+
+# --- 5. INCLUDES (Your original rules) ---
 
 include: "rules/alignment.smk"
 include: "rules/qc_aligned.smk"

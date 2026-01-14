@@ -1,7 +1,7 @@
 rule alignment_LR:
     input:
-        config["fastqs_LR"]
-        #lambda wildcards: config["SAMPLES"][wildcards.sample_id]["fastqs_LR"]
+        #config["fastqs_LR"]
+        lambda wildcards: config["SAMPLES"][wildcards.sample_id]["fastqs_LR"]
     threads: 
         config["threads_num"]
     params: 
@@ -19,7 +19,7 @@ rule alignment_LR:
 
         mkdir -p results_{wildcards.sample_id}/LR/alignment
         # Align with minimap
-        minimap2 -ax splice -uf -k14 {output.ref_fa} {input} > results_{wildcards.sample_id}/LR/alignment/BJ.sam
+        minimap2 -ax splice -uf -k14 {output.ref_fa} {input} > results_{wildcards.sample_id}/LR/alignment/{wildcards.sample_id}.sam
 
         # Sort alignment results with samtools
         samtools sort results_{wildcards.sample_id}/LR/alignment/{wildcards.sample_id}.sam -o {output.bam}
@@ -76,8 +76,8 @@ rule make_new_vcf:
 
 rule hap_aligner:
     input:
-        fastq=config["fastqs_LR"],
-        #fastq= lambda wildcards: config["SAMPLES"][wildcards.sample_id]["fastqs_LR"],
+        #fastq=config["fastqs_LR"],
+        fastq= lambda wildcards: config["SAMPLES"][wildcards.sample_id]["fastqs_LR"],
         new_vcf_hap1="results_{sample_id}/LR/lorals/make_new_vcf/{sample_id}_sorted_hap1.fa",
         new_vcf_hap2="results_{sample_id}/LR/lorals/make_new_vcf/{sample_id}_sorted_hap2.fa"
     output:
@@ -123,8 +123,8 @@ rule calc_annotate_ase:
 
 rule alignment_transcript:
     input:
-        config["fastqs_LR"]
-        #lambda wildcards: config["SAMPLES"][wildcards.sample_id]["fastqs_LR"]
+        #config["fastqs_LR"]
+        lambda wildcards: config["SAMPLES"][wildcards.sample_id]["fastqs_LR"]
     threads: 
         config["threads_num"]
     params: 

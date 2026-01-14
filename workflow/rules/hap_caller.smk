@@ -87,7 +87,7 @@ rule het_selection_rna:
         noed=temp("results_{sample_id}/rna/filtration/snps_noediting.vcf.gz")
     params:
         ad=config["AD"],
-        samp=config["sample_name"],
+        samp="{sample_id}",
         samplefile="results_{sample_id}/rna/filtration/sample.txt",
         editingsites=config["editing_sites"]
     conda: "../envs/samtools.yml"

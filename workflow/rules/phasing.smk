@@ -54,7 +54,11 @@ rule prephasing_WHATSHAP_atac:
 
 rule merge_tec_vcf:
     input:
-        pp=expand("results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",tec=config["tech"],sample_id=config["sample_name"])
+        pp= lambda wildcards: expand(
+            "results_{sample_id}/{tec}/filtration/snps_het.vcf.gz",
+            sample_id=wildcards.sample_id,
+            tec=config["SAMPLES"][wildcards.sample_id]["tech"]
+        )
     output:
         v="results_{sample_id}/merged_vcf/snps_het.vcf.gz",
         t="results_{sample_id}/merged_vcf/snps_het.vcf.gz.tbi"
@@ -66,7 +70,11 @@ rule merge_tec_vcf:
 
 rule merge_tec_vcf_prephased:
     input:
-        np=expand("results_{sample_id}/{tec}/prephasing/pre_phased.vcf.gz",tec=config["tech"],sample_id=config["sample_name"])
+        np= lambda wildcards: expand(
+            "results_{sample_id}/{tec}/prephasing/pre_phased.vcf.gz",
+            sample_id=wildcards.sample_id,
+            tec=config["SAMPLES"][wildcards.sample_id]["tech"]
+        )
     output:
         vp="results_{sample_id}/phased/pre_phased.vcf.gz",
         tp="results_{sample_id}/phased/pre_phased.vcf.gz.tbi"
@@ -104,7 +112,8 @@ rule phasing_SHAPEIT4:
         "../envs/shapeit.yml"
     threads: config["threads_num"]
     params: 
-        sex=config["sex"] #config["SAMPLES"][wildcards.sample_id]["sex"]
+        #sex=config["sex"] #
+        sex=lambda wildcards: config["SAMPLES"][wildcards.sample_id]["sex"]
     shell:
         """  if [ {wildcards.chrom} == "X" ]
         then
@@ -127,27 +136,34 @@ rule phasing_haptreex:
     params:
         gtffile=config["genome_gtf"],
         haptreex=config["haptreex_exe"],
-        tec=config["tech"], #config["SAMPLES"][wildcards.sample_id]["tech"]
+        #tec=config["tech"], #
+        tec=lambda wildcards: config["SAMPLES"][wildcards.sample_id]["tech"],
         htslib=config["htslib_path"],
-        sampleid="{sample_id}"
-    conda: "../envs/samtools.yml"
+        sampleid="{sample_id}",
+        temp="results_{sample_id}/temp.vcf"
+    conda: 
+        "../envs/samtools.yml"
     shell:
-        """ bcftools view {input.vcf} -Ov -o temp.vcf
+        """ bcftools view {input.vcf} -Ov -o {params.temp}
         export LD_LIBRARY_PATH={params.htslib}
         if [[ "{params.tec}" == *exome* ]]
         then
-            {params.haptreex} -v temp.vcf -r results_{params.sampleid}/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results_{params.sampleid}/exome/recalibration/exome.recal.bam
+            {params.haptreex} -v {params.temp} -r results_{params.sampleid}/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results_{params.sampleid}/exome/recalibration/exome.recal.bam
         elif [[ "{params.tec}" == *atac* ]]
         then
-            {params.haptreex} -v temp.vcf -r results_{params.sampleid}/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results_{params.sampleid}/atac/recalibration/atac.recal.bam
+            {params.haptreex} -v {params.temp} -r results_{params.sampleid}/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output} -d results_{params.sampleid}/atac/recalibration/atac.recal.bam
         else
-            {params.haptreex} -v temp.vcf -r results_{params.sampleid}/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output}
+            {params.haptreex} -v {params.temp} -r results_{params.sampleid}/rna/recalibration/rna.recal.bam -g {params.gtffile} -o {output}
         fi
-        rm temp.vcf """
+        rm {params.temp} """
 
 rule bgzip_and_indexing:
     input:
-        expand("results_{sample_id}/phased/{chrom}_phased.vcf",chrom=config["chromosomes_to_phase"],sample_id=config["sample_name"])
+        lambda wildcards: expand(
+            "results_{sample_id}/phased/{chrom}_phased.vcf",
+            sample_id=wildcards.sample_id,
+            chrom=config["chromosomes_to_phase"]
+        )
     output: 
         vcf="results_{sample_id}/phased/shapeit_whatshap.vcf.gz",
         vcftbi="results_{sample_id}/phased/shapeit_whatshap.vcf.gz.tbi"
@@ -166,14 +182,17 @@ rule manual_phasing:
     output:
         temp("results_{sample_id}/phased/manual_phasing{chrom}.tsv")
     params:
-        sample=config["sample_name"]
+        sample="{sample_id}",
+        OD=config["OD"],
+        MAD=config["MAD"]
     shell:
         """ Rscript --vanilla workflow/scripts/iterative.R -c {wildcards.chrom} -v {input.not_phased} \
         -s {input.shapeit} \
         -x {input.haptreex} \
         -a {input.ase}/rna.table \
         -n {params.sample} \
-        -o {output}
+        -o {output} \
+        -r {params.MAD} -d {params.OD}
         """
 
 rule tsv_to_vcf:
@@ -184,7 +203,7 @@ rule tsv_to_vcf:
     conda:
         "../envs/samtools.yml"
     params:
-        sample=config["sample_name"]
+        sample="{sample_id}"
     shell:
         """ day=$(date "+%d/%m/%4Y %T")
         echo "##fileformat=VCFv4.2
@@ -203,11 +222,11 @@ rule tsv_to_vcf:
 
 rule bgzip_and_indexing_man:
     input:
-        expand("results_{sample_id}/phased/manual_refinment{chrom}.vcf",chrom=config["chromosomes_to_phase"],sample_id=config["sample_name"])
-        #lambda wildcards: 
-            # expand("results_{sample_id}/phased/manual_refinment{chrom}.vcf",
-            #        chrom=config["chromosomes_to_phase"], # GLOBAL CHROMS LIST
-            #        sample_id=wildcards.sample_id)
+        #expand("results_{sample_id}/phased/manual_refinment{chrom}.vcf",chrom=config["chromosomes_to_phase"],sample_id=config["sample_name"])
+        lambda wildcards: 
+            expand("results_{sample_id}/phased/manual_refinment{chrom}.vcf",
+                   chrom=config["chromosomes_to_phase"], # GLOBAL CHROMS LIST
+                   sample_id=wildcards.sample_id)
     output: 
         vcf="results_{sample_id}/phased/manual_refinment.vcf.gz",
         vcftbi="results_{sample_id}/phased/manual_refinment.vcf.gz.tbi"
